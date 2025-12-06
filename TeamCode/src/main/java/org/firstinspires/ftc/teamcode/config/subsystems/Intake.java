@@ -1,0 +1,148 @@
+package org.firstinspires.ftc.teamcode.config.subsystems;
+
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.seattlesolvers.solverslib.command.SubsystemBase;
+
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
+import org.firstinspires.ftc.teamcode.config.util.logging.LogType;
+import org.firstinspires.ftc.teamcode.config.util.logging.Logger;
+
+/*Subsystem class. Subsystems are anything on the robot that is not the drive train
+such as a claw or a lift.
+*/
+@Config
+public class Intake extends SubsystemBase {
+    //Telemetry = text that is printed on the driver station while the robot is running
+    private MultipleTelemetry telemetry;
+    private Servo gateL, gateR;
+    public DcMotorEx intake, uptake;
+    public static double launchIntake = 1;
+    public static double launchUptake = 1;
+    public static double intakeUptake = .2;
+
+    public static boolean manual = false;
+
+    public static double gateLPos = 0.5;
+    public static double gateRPos = 0.5;
+
+    private static double
+            lOpen = .5,
+            lClosed = .5,
+            rOpen = .5,
+            rClosed = .5;
+
+    public enum IntakeState {
+        OUTTAKE,
+        INTAKE,
+        OFF
+    }
+
+    public enum UptakeState {
+        ON,
+        OFF,
+        SLOW
+    }
+    public enum GateState {
+        OPEN,
+        CLOSED
+    }
+    public IntakeState currentIntake = IntakeState.OFF;
+    public UptakeState currentUptake = UptakeState.OFF;
+    public GateState currentGate = GateState.CLOSED;
+
+
+    //state of the subsystem
+
+
+    // public DcMotorEx
+
+    public Intake(HardwareMap hardwareMap, Telemetry telemetry) {
+        //init telemetry
+        this.telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+        //pusherL = hardwareMap.get(Servo.class, "cs1");
+        //pusherM = hardwareMap.get(Servo.class, "cs2");
+        //pusherM = hardwareMap.get(Servo.class, "cs3");
+
+        gateL = hardwareMap.get(Servo.class, "cs5");
+        gateR = hardwareMap.get(Servo.class, "cs4");
+        intake = hardwareMap.get(DcMotorEx.class, "em1");
+
+
+        intake.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        //init servos based on their name in the robot's config file
+
+    }
+
+    //Call this method to open/close the servos
+
+
+    //methods to change the state
+
+    /*Periodic method gets run in a loop during auto and teleop.
+    The telemetry gets updated constantly so you can see the status of the subsystems */
+
+    public void setIntakeState(IntakeState intakeState) {
+        currentIntake = intakeState;
+    }
+    public void setUptakeState(UptakeState uptakeState) {
+        currentUptake = uptakeState;
+    }
+    public void setGateState(GateState gateState) {
+        currentGate = gateState;
+    }
+    public void periodic() {
+        switch (currentIntake) {
+            case OFF:
+                intake.setPower(0);
+                break;
+            case INTAKE:
+                intake.setPower(launchIntake);
+                break;
+            case OUTTAKE:
+                intake.setPower(-1);
+                break;
+        }
+
+        switch (currentUptake) {
+            case OFF:
+                uptake.setPower(0);
+                break;
+            case ON:
+                uptake.setPower(launchUptake);
+            case SLOW:
+                uptake.setPower(intakeUptake);
+        }
+        switch (currentGate) {
+            case OPEN:
+                gateL.setPosition(lOpen);
+                gateR.setPosition(rOpen);
+                break;
+            case CLOSED:
+                gateL.setPosition(lOpen);
+                gateR.setPosition(rOpen);
+                break;
+        }
+
+        telemetry.addData("Intake amps", intake.getCurrent(CurrentUnit.AMPS));
+    }
+
+    public void init() {
+        setIntakeState(IntakeState.OFF);
+        intake.setPower(0);
+        setGateState(GateState.CLOSED);
+        gateL.setPosition(lClosed);
+        gateR.setPosition(rClosed);
+    }
+
+    public void log(){
+        Logger.logData(LogType.INTAKE_POWER, String.valueOf(intake.getPower()));
+    }
+}
