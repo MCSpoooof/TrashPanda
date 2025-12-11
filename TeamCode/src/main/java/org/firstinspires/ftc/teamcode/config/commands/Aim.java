@@ -11,6 +11,7 @@ public class Aim extends CommandBase {
     private double targetX;
     private double targetY;
     public static double fudgeFactor = 0;
+    public static double flightTime = 0.5;
 
     private static final double MIN_ANGLE = -90; // turret left limit
     private static final double MAX_ANGLE = 90;  // turret right limit
@@ -26,9 +27,15 @@ public class Aim extends CommandBase {
          * Calculates the turret angle relative to the robot's front (degrees).
          * Clamps to [-90°, +90°].
          */
-        double dx = targetX - r.getFollower().getPose().getX();
-        double dy = targetY - r.getFollower().getPose().getY();
-        double robotHeading = Math.toDegrees(r.getAlliance() == Alliance.RED ? r.getFollower().getPose().getHeading(): r.getFollower().getPose().getHeading() + Math.toRadians(180));
+
+        double vx = r.getFollower().getVelocity().getXComponent();
+        double vy = r.getFollower().getVelocity().getYComponent();
+        double va = 0;//r.getFollower().getAngularVelocity();
+
+
+        double dx = targetX - r.getFollower().getPose().getX() + vx * flightTime;
+        double dy = targetY - r.getFollower().getPose().getY() + vy * flightTime;
+        double robotHeading = Math.toDegrees(r.getAlliance() == Alliance.RED ? r.getFollower().getPose().getHeading() + flightTime * va: r.getFollower().getPose().getHeading() + Math.toRadians(180) + flightTime * va);
 
         double angleToTargetField = Math.toDegrees(Math.atan2(dy, dx));
 

@@ -25,8 +25,10 @@ public class TelePOP extends LinearOpMode {
     private double scaleFactor = 1;
     public Timer loopTimer = new Timer();
     private double lastTime = 0, currentTime = 0;
+    public static boolean manualMode = false;
     @Override
     public void runOpMode() throws InterruptedException {
+
         CommandScheduler.getInstance().reset();
 
         //Initialize Hardware
@@ -48,11 +50,16 @@ public class TelePOP extends LinearOpMode {
 
 
         while (opModeIsActive()) {
+            if (!manualMode) //&& (!gamepad1.right_bumper || robot.getDistanceFromGoal() < goalDist))
+                robot.updateShooting();
             lastTime = currentTime;
             currentTime = loopTimer.getElapsedTime();
             telemetry.addData("Loop Time", currentTime - lastTime);
             telemetry.addData("Distance From Goal", robot.getDistanceFromGoal());
             telemetry.addData("Shot Num", robot.shotNum);
+            telemetry.addData("xVel", robot.getFollower().getVelocity().getXComponent());
+            telemetry.addData("yVel", robot.getFollower().getVelocity().getYComponent());
+            telemetry.addData("xVel", robot.getFollower().getAngularVelocity());
 
             //Update everything
             robot.tPeriodic();
@@ -80,15 +87,22 @@ public class TelePOP extends LinearOpMode {
             }
 
 
-            if(!gamepad1.right_bumper && ! (gamepad1.right_trigger > 0.3) & ! (gamepad1.left_trigger > 0.3)) {
+            if(!gamepad1.right_bumper && ! (gamepad1.right_trigger > 0.3) && ! (gamepad1.left_trigger > 0.3) && !gamepad1.square) {
                 robot.intakeOff = true;
                 robot.uptakeOff = true;
+            }
+
+            if (gamepad1.square) {
+                robot.outtake1();
+            }
+            else {
+                robot.outtake = false;
             }
 
             new Aim(robot, alliance == Alliance.RED ? redX : blueX, goalY).execute();
             //}
 
-            if (gamepad1.right_bumper || gamepad2.right_bumper) {
+            if (gamepad1.right_bumper || gamepad2.right_bumper || gamepad2.left_bumper) {
                 robot.launcher.setLauncherState(Launcher.LauncherState.OUT);
                 robot.intake.setGateState(Intake.GateState.OPEN);
             }

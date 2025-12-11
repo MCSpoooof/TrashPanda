@@ -115,7 +115,7 @@ public class Intake extends SubsystemBase {
                 intake.setPower(-1);
                 break;
             case SLOWOUTTAKE:
-                intake.setPower(-.1);
+                intake.setPower(-.25);
                 break;
         }
 

@@ -30,8 +30,8 @@ public class FifteenBall extends OpMode {
     double moveThreshold = 1.25;
     boolean doneOff = false;
     double doneNum = 0;
-    double outtakeTIme = .15;
-    double lastMoveTime = 5.7;
+    double outtakeTIme = .1;
+    double lastMoveTime = 5.2;
     int doneThreshold = 4;
 
 
@@ -65,17 +65,17 @@ public class FifteenBall extends OpMode {
                 if (robot.getFollower().isBusy()) {
                     pathTimer.reset();
                     return;
-                    }
+                }
                 if (pathTimer.getElapsedTimeSeconds() > onThreshold) {
-                        robot.intake.setIntakeState(Intake.IntakeState.INTAKE);
-                        robot.intake.setUptakeState(Intake.UptakeState.ON);
-                        if (robot.launcher.shotDetected && !robot.shotFired) {
-                            robot.shotFired = true;
-                            robot.hood.decreaseSmall();
-                        } else if (!robot.launcher.shotDetected) {
-                            robot.shotFired = false;
-                        }
+                    robot.intake.setIntakeState(Intake.IntakeState.INTAKE);
+                    robot.intake.setUptakeState(Intake.UptakeState.ON);
+                    if (robot.launcher.shotDetected && !robot.shotFired) {
+                        robot.shotFired = true;
+                        robot.hood.decreaseSmall();
+                    } else if (!robot.launcher.shotDetected) {
+                        robot.shotFired = false;
                     }
+                }
 
                     /*
                     if (robot.launcher.controller.done) {
@@ -91,8 +91,8 @@ public class FifteenBall extends OpMode {
                         robot.intake.setIntakeState(Intake.IntakeState.OFF);
                         robot.intake.setUptakeState(Intake.UptakeState.OFF);
                     } */
-                    if (pathTimer.getElapsedTimeSeconds() > moveThreshold)
-                        setPathState(12);
+                if (pathTimer.getElapsedTimeSeconds() > moveThreshold)
+                    setPathState(12);
 
                 break;
 
@@ -168,7 +168,7 @@ public class FifteenBall extends OpMode {
 
             case 13:
                 if (!robot.getFollower().isBusy()) {
-                    robot.getFollower().followPath(robot.getAlliance() == Alliance.RED ? shoot215(robot.getFollower()) : shoot2Blue(robot.getFollower()), true);
+                    robot.getFollower().followPath(robot.getAlliance() == Alliance.RED ? shoot215(robot.getFollower()) : shoot215Blue(robot.getFollower()), true);
                     robot.intake.setIntakeState(Intake.IntakeState.OFF);
                     robot.intake.setUptakeState(Intake.UptakeState.OFF);
                     setPathState(14);
@@ -204,8 +204,8 @@ public class FifteenBall extends OpMode {
                         robot.shotFired = false;
                     }
                 }
-                    if (pathTimer.getElapsedTimeSeconds() > moveThreshold)
-                        setPathState(19);
+                if (pathTimer.getElapsedTimeSeconds() > moveThreshold)
+                    setPathState(19);
                 break;
 
 
@@ -231,18 +231,18 @@ public class FifteenBall extends OpMode {
                 break;
             case 1925:
                 if (!robot.getFollower().isBusy()) {
-                    robot.getFollower().followPath(robot.getAlliance() == Alliance.RED ? gate15(robot.getFollower()) : gateBlue(robot.getFollower()), true);
+                    robot.getFollower().followPath(robot.getAlliance() == Alliance.RED ? gate15(robot.getFollower()) : gate15Blue(robot.getFollower()), true);
                     setPathState(1975);
                 }
             case 1975:
-                if (!robot.getFollower().isBusy()) {
+                if (!robot.getFollower().isBusy() || pathTimer.getElapsedTimeSeconds() > 1) {
                     setPathState(20);
                 }
                 break;
 
             case 20:
                 if (pathTimer.getElapsedTimeSeconds() > .3) {
-                    robot.getFollower().followPath(robot.getAlliance() == Alliance.RED ? shoot315(robot.getFollower()) : shoot3Blue(robot.getFollower()), true);
+                    robot.getFollower().followPath(robot.getAlliance() == Alliance.RED ? shoot315(robot.getFollower()) : shoot315Blue(robot.getFollower()), true);
                     robot.intake.setIntakeState(Intake.IntakeState.OFF);
                     robot.intake.setUptakeState(Intake.UptakeState.OFF);
                     setPathState(21);
@@ -279,8 +279,8 @@ public class FifteenBall extends OpMode {
                         robot.shotFired = false;
                     }
                 }
-                    if (pathTimer.getElapsedTimeSeconds() > moveThreshold)
-                        setPathState(27);
+                if (pathTimer.getElapsedTimeSeconds() > moveThreshold)
+                    setPathState(27);
                 break;
 
 
@@ -343,8 +343,8 @@ public class FifteenBall extends OpMode {
                         robot.shotFired = false;
                     }
                 }
-                    if (pathTimer.getElapsedTimeSeconds() > moveThreshold)
-                        setPathState(35);
+                if (pathTimer.getElapsedTimeSeconds() > moveThreshold)
+                    setPathState(35);
                 break;
 
 
@@ -365,13 +365,13 @@ public class FifteenBall extends OpMode {
 
             case 36:
                 if (!robot.getFollower().isBusy()) {
-                    robot.getFollower().followPath(robot.getAlliance() == Alliance.RED ? pickup4(robot.getFollower()) : pickup3Blue(robot.getFollower()), true);
+                    robot.getFollower().followPath(robot.getAlliance() == Alliance.RED ? pickup4(robot.getFollower()) : pickup4Blue(robot.getFollower()), true);
                     setPathState(37);
                 }
 
             case 37:
                 if (!robot.getFollower().isBusy() || pathTimer.getElapsedTimeSeconds() > lastMoveTime) {
-                    robot.getFollower().followPath(robot.getAlliance() == Alliance.RED ?shoot5(robot.getFollower()) : shoot4Blue(robot.getFollower()), true);
+                    robot.getFollower().followPath(robot.getAlliance() == Alliance.RED ?shoot5(robot.getFollower()) : shoot5Blue(robot.getFollower()), true);
                     robot.intake.setUptakeState(Intake.UptakeState.OFF);
                     robot.intake.setIntakeState(Intake.IntakeState.OFF);
                     setPathState(375);
@@ -474,10 +474,14 @@ public class FifteenBall extends OpMode {
 
     @Override
     public void init_loop() {
-        robot.aInitLoop(new GamepadEx(gamepad1));
+        //robot.aInitLoop(new GamepadEx(gamepad1));
+        telemetry.addData("Alliance", robot.getAlliance());
+        telemetry.addData("Start Pose X", robot.getFollower().getPose().getX());
+        telemetry.addData("Start Pose Y", robot.getFollower().getPose().getY());
+        telemetry.addData("Start Pose X", robot.getFollower().getHeading());
         if (gamepad1.back) {
             robot.setAlliance(Alliance.BLUE);
-            robot.getFollower().setStartingPose(convertToBlue(startPose));
+            robot.getFollower().setPose(startPoseBlue);
         }
     }
 
@@ -497,5 +501,3 @@ public class FifteenBall extends OpMode {
         }
     }
 }
-
-

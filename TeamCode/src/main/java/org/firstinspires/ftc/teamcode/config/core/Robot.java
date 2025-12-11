@@ -39,7 +39,7 @@ public class Robot {
 
     public AutoDriving autoDriving;
     public static Pose p = new Pose(turretOffset, 0, Math.toRadians(90));
-    public static Pose autoEndPose = p;
+    public static Pose autoEndPose = p.copy();
     public Launcher launcher;
     public Turret turret;
     public Hood hood;
@@ -61,6 +61,8 @@ public class Robot {
     double frontWallX = 72, frontWallY = 65;
 
     double maxDist = 72;
+    public static double goalDist = 52;
+    public static double farLaunchDist = 100;
 
     //public static Pose cornerBlueFront = new Pose(-72, -72);
     public static Pose cornerBlueBack = new Pose(-61.9, -65.9);
@@ -73,7 +75,7 @@ public class Robot {
 
     public static boolean auto = false;
 
-    public static boolean logData = true;
+    public static boolean logData = false;
 
     public boolean shotFired = false;
     public boolean justShot = false;
@@ -82,6 +84,7 @@ public class Robot {
     public Hood.HoodState lastHood;// = Hood.HoodState.DOWN;
     public double lastHoodTarget;// = hood.hoodDown;
     public boolean rBumper = false;
+    public boolean outtake = true;
 
 
 
@@ -184,11 +187,12 @@ public class Robot {
             intakeOff = true;
             uptakeOff = true;
             rBumper = false;
+            /*
             if (shotNum >= 0) {
                 hood.setState(lastHood);
                 hood.setTarget(lastHoodTarget);
                 shotNum = -1;
-            }
+            } */
         }));
 
         g1.getGamepadButton(GamepadKeys.Button.DPAD_UP).whileHeld(new Fire3(this));
@@ -282,7 +286,10 @@ public class Robot {
         intake.periodic();
         hood.periodic();
         //autoEndPose = follower.getPose().copy();
-        autoEndPose = new Pose(-follower.getPose().getY(), follower.getPose().getX() + turretOffset, alliance == Alliance.RED ? follower.getHeading() + Math.toRadians(90) : follower.getHeading() - Math.toRadians(90));
+        if (alliance == Alliance.RED)
+            autoEndPose = new Pose(-follower.getPose().getY(), follower.getPose().getX() + turretOffset, alliance == Alliance.RED ? follower.getHeading() + Math.toRadians(90) : follower.getHeading() - Math.toRadians(90));
+        else
+            autoEndPose = new Pose(-follower.getPose().getX() + turretOffset, follower.getPose().getY(), alliance == Alliance.RED ? follower.getHeading() + Math.toRadians(90) : follower.getHeading() - Math.toRadians(90));
         if (logData) log();
     }
 
@@ -445,6 +452,21 @@ public class Robot {
     }
 
     public void updateShooting() {
+        if (getDistanceFromGoal() > farLaunchDist) {
+            Launcher.tele_target = 5200;
+            Hood.hoodIncreaseAmt = 0;
+            hood.setTarget(Hood.hoodUp);
+        }
+        else if (getDistanceFromGoal() > goalDist) {
+            Launcher.tele_target = 4200;
+            Hood.hoodIncreaseAmt = 0.02;
+            hood.setTarget(Hood.hoodUp);
+        }
+        else {
+            Launcher.tele_target = 3000;
+            Hood.hoodIncreaseAmt = 0;
+            hood.setTarget(Hood.hoodDown);
+        }
 
     }
 
@@ -517,6 +539,20 @@ public class Robot {
 
     private static double lerp(double a, double b, double t) {
         return a + (b - a) * t;
+    }
+    public void outtake1() {
+        if (!outtake) {
+            timer.reset();
+            outtake = true;
+            intakeOff = false;
+            intake.setIntakeState(Intake.IntakeState.SLOWOUTTAKE);
+        }
+        else {
+            if (timer.getElapsedTimeSeconds() > .1) {
+                intake.setIntakeState(Intake.IntakeState.OFF);
+                intakeOff = true;
+            }
+        }
     }
 
 
